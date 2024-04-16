@@ -22,7 +22,9 @@ const UserSchema = new mongoose.Schema({
         type:Boolean,
         default:false,
         required:true,
-    }
+    },
+    googleId: { type: String },
+    facebookId: { type: String }
 }) ;
 
 UserSchema.pre('save',async function(next){

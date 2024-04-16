@@ -55,7 +55,6 @@ exports.createUsers  = async (req, res) => {
     if(user.verified)return sendError(res,'this account is already verified !');
     const token=await VerificationToken.findOne({owner:user._id});
     if(!token)return sendError(res,'server error ! or we didnt find user');
-    //if(token.createdAt+360000<Date.now())return sendError(res,'Verification link has been expired !');
     const isMatched = await token.compareToken(otp);
     if(!isMatched) return sendError(res,'Invalid token ');
     user.verified=true;
@@ -106,8 +105,42 @@ exports.createUsers  = async (req, res) => {
      });
     res.json({success:true,message:"password reset successfully"});
  };
- 
+ exports.logout = async (req, res) => {
+    try {
+      res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+      console.error('Error during logout:', error);
+      res.status(500).json({ error: 'Failed to logout' });
+    }
+  };
 
+/*
+ exports.logout = (req, res) => {
+    return sendSuccess(res, 'Logout successful');
+  };
+  
+*/
+
+
+
+
+/*
+const blacklist = new Set(); 
+
+exports.logout = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1]; 
+
+    blacklist.add(token);
+
+    res.json({ success: true, message: 'Logout successful' });
+  } catch (error) {
+    console.error('Error logging out:', error);
+    res.status(500).json({ success: false, error: 'Failed to logout' });
+  }
+};
+
+*/
 
 
              /*
