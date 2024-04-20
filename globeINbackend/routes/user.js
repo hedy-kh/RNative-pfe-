@@ -4,7 +4,6 @@ const { isResetTokenValid } = require('../middlewares/user');
 const { validateUser, validate } = require('../middlewares/validator');
 const passport = require('passport');
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile'] }));
-router.get('/auth/google', passport.authenticate('google', { scope: ['profile'] }));
 
 router.get('/auth/google/redirect', passport.authenticate('google'), (req, res) => {
   res.redirect('/profile');
@@ -13,10 +12,9 @@ router.get('/auth/google/redirect', passport.authenticate('google'), (req, res) 
 router.get('/auth/facebook', passport.authenticate('facebook'));
 
 router.get('/auth/facebook/redirect', passport.authenticate('facebook'), (req, res) => {
-  
   res.redirect('/profile');
 });
-router.post('/create', validateUser, validate, createUsers);
+router.post('/create',validateUser,validate, createUsers);
 router.post('/signin', SignIn);
 router.post('/verify-email', verifyEmail);
 router.post('/logout', logout);

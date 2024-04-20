@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const { upload } = require('../middlewares/upload');
 const { createProduct, getProduct, updateProduct, deleteProduct, getProductsByUser } = require('../controller/posts');
 const { validateProduct } = require('../middlewares/validator');
 const bodyParser = require('body-parser'); 
 
-router.post('/createProduct', bodyParser.json(), validateProduct, createProduct);
+router.post('/createProduct', upload, validateProduct, createProduct);
 
 router.get('/getProduct/:id', getProduct);
 

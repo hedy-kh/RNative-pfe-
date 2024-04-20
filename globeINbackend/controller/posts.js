@@ -30,6 +30,40 @@ exports.createProduct = async (req, res) => {
   try {
     const userId = new Types.ObjectId(req.headers['user-id']);
     if (!userId) {
+      return res.status(400).json({ error: 'User ID not available in headers' });
+    }
+    const { name, description, price, location, createdAt } = req.body;
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message || 'Failed to upload image' });
+      }
+      const imgUrl = req.file ? req.file.path : '';
+      const newProduct = new Product({
+        user: userId, 
+        name,
+        description,
+        price,
+        location,
+        createdAt, 
+        imgUrl,
+        active: true 
+      });
+
+      await newProduct.save();
+
+      return res.status(201).json({ message: 'Product created successfully' });
+    });
+  } catch (error) {
+    console.error('Error creating product:', error);
+    return res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+
+/*
+exports.createProduct = async (req, res) => {
+  try {
+    const userId = new Types.ObjectId(req.headers['user-id']);
+    if (!userId) {
       return sendError(res, 'User ID not available in headers');
     }
     const { name, description, price, location, createdAt } = req.body;
@@ -58,7 +92,7 @@ exports.createProduct = async (req, res) => {
     return (res, 'Failed to create product');
   }
 };
-
+*/
 exports.getProduct = async (req, res) => {
   try {
     const productId = req.params.id;
