@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import DetailProductScreen from "../Screens/DetailProductScreen";
 import HomeStackScreen from "./HomeStack";
-import SearchStackScreen from "./SearchStack"; 
+import SearchStackScreen from "./SearchStack"; // Import the SearchStackScreen
 import ProfileStackScreen from "./ProfileStack";
 export default function TabNavigation() {
   const Tab = createBottomTabNavigator();
@@ -16,7 +16,7 @@ export default function TabNavigation() {
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen
         name="Search"
-        component={SearchStackScreen} 
+        component={SearchStackScreen} // Use SearchStackScreen instead of SearchScreen
         options={{
           tabBarIcon: ({}) => <Feather name="search" size={24} color="black" />,
         }}

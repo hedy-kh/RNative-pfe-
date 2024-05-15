@@ -1,4 +1,11 @@
-import { View, Text, Image, StyleSheet, StatusBar,TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  StatusBar,
+  TouchableOpacity,
+} from "react-native";
 import React from "react";
 import ProductCard from "../Components/SearchScreen/ProductCard";
 const SearchScreen = ({ route }) => {
@@ -6,7 +13,6 @@ const SearchScreen = ({ route }) => {
   const locationName = route.params ? route.params.locationName : "";
 
   return (
-    
     <View>
       {products.map((product) => (
         <ProductCard

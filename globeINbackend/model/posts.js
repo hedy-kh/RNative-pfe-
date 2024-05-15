@@ -5,7 +5,7 @@ const ProductSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },
     description: { type: String },
-    imgUrl: { type: String },
+    image: { type: String,required:true},
     publishDate: { type: Date, default: Date.now },
     price: { type: Number },
     location: {
@@ -16,7 +16,7 @@ const ProductSchema = new Schema({
         },
         coordinates: {
             type: [Number],
-            required: true
+            required: false
         }
     },
     active: { type: Boolean, default: false }

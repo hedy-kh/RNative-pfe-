@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import Axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { CommonActions } from "@react-navigation/native";
 
-const apiUrl = "http://192.168.3.124:8000/api/user/signin";
+const apiUrl = "http://192.168.186.178:8081/api/user/signin";
 
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -32,8 +33,14 @@ const SignInScreen = ({ navigation }) => {
         } else {
           await AsyncStorage.removeItem("token");
         }
-        alert("login successful ");
-         navigation.navigate("ProfileScreen");
+
+        // Navigate to ProfileScreen
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "ProfileScreen" }],
+      })
+    );
       } else {
         alert(response.data.error);
       }
@@ -76,7 +83,7 @@ const SignInScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>Create Account</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => navigation.navigate("ForgetPasswordScreen")}
+        onPress={() => navigation.navigate("ResetPassword")}
         style={styles.forgotPassword}
       >
         <Text style={styles.linkText}>Forgot Password?</Text>

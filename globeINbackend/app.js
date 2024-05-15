@@ -9,6 +9,7 @@ require ('dotenv').config();
 require ('./db');
 const app = express();
 app.use(express.json()); 
+app.use(express.json());
 app.use(bodyParser.json());
 const PORT = process.env.PORT || 8000;
 app.use(cors());

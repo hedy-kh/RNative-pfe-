@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import Axios from "axios";
 
-const apiUrl = "http://192.168.3.124:8000/api/user/verify-email"; // Update API endpoint
+const apiUrl = "http://192.168.186.178:8081/api/user/verify-email"; // Update API endpoint
 
 const OTPVerificationScreen = ({ navigation, route }) => {
   const { userId, otp } = route.params;

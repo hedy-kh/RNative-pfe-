@@ -1,31 +1,44 @@
 const Product = require("../model/posts");
 const multer = require('multer');
 const path = require('path');
+const fs =require('fs')
 const { Types } = require('mongoose');
 const { sendError, sendSuccess } = require('../utils/helper');
 const bodyParser = require('body-parser'); 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: function(req, file, cb) {
-      cb(null, 'uploads/');
-    },
-    filename: function(req, file, cb) {
-      cb(null, Date.now() + '-' + file.originalname);
+exports.createProduct = async (req, res) => {
+  try {
+    const userId = new Types.ObjectId(req.headers['user-id']);
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID not available in headers' });
     }
-  }),
-  limits: { fileSize: 1024 * 1024 * 5 }, 
-  fileFilter: function(req, file, cb) {
-    const filetypes = /jpeg|jpg|png/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    if (mimetype && extname) {
-      cb(null, true);
-    } else {
-      cb(new Error('Error: Images only! (JPEG, JPG, PNG)')); 
-    }
-  }
-}).single('image');
+    const { name, description, price, location } = req.body; // Remove createdAt
+    const image = req.file ? req.file.path : '';
+    console.log('req.file:', req.file); // Debugging
+    console.log('image:', image); // Debugging
 
+    // Set the createdAt field directly here
+    const newProduct = new Product({
+      user: userId, 
+      name,
+      description,
+      price,
+      location,
+      image,
+      active: true 
+    });
+    
+    console.log('newProduct:', newProduct); // Check the new product object
+    await newProduct.save();
+    return res.status(201).json({ message: 'Product created successfully' });
+  } catch (error) {
+    console.error('Error creating product:', error);
+    return res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+
+
+
+/*
 exports.createProduct = async (req, res) => {
   try {
     const userId = new Types.ObjectId(req.headers['user-id']);
@@ -37,7 +50,9 @@ exports.createProduct = async (req, res) => {
       if (err) {
         return res.status(500).json({ error: err.message || 'Failed to upload image' });
       }
-      const imgUrl = req.file ? req.file.path : '';
+      console.log('req.file:', req.file); // Check if req.file is populated correctly
+      const image = req.file ? req.file.path : '';
+      console.log('image path:', image); // Check the image path
       const newProduct = new Product({
         user: userId, 
         name,
@@ -45,7 +60,40 @@ exports.createProduct = async (req, res) => {
         price,
         location,
         createdAt, 
-        imgUrl,
+        image, // Ensure image path is correctly assigned
+        active: true 
+      });
+      console.log('newProduct:', newProduct); // Check the new product object
+      await newProduct.save();
+      return res.status(201).json({ message: 'Product created successfully' });
+    });
+  } catch (error) {
+    console.error('Error creating product:', error);
+    return res.status(500).json({ error: 'Failed to create product' });
+  }
+};
+*/
+/*
+exports.createProduct = async (req, res) => {
+  try {
+    const userId = new Types.ObjectId(req.headers['user-id']);
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID not available in headers' });
+    }
+    const { name, description, price, location, createdAt } = req.body;
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message || 'Failed to upload image' });
+      }
+      const image = req.file ? req.file.path : '';
+      const newProduct = new Product({
+        user: userId, 
+        name,
+        description,
+        price,
+        location,
+        createdAt, 
+        image: image ? image : '',
         active: true 
       });
 
@@ -58,7 +106,7 @@ exports.createProduct = async (req, res) => {
     return res.status(500).json({ error: 'Failed to create product' });
   }
 };
-
+*/
 /*
 exports.createProduct = async (req, res) => {
   try {

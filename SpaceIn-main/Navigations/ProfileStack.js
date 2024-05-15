@@ -5,7 +5,7 @@ import SignInScreen from "../Screens/login/SignInScreen";
 import OTPVerificationScreen from "../Screens/login/Otp";
 import SignUpScreen from "../Screens/login/SignUpScreen";
 import ResetPasswordScreen from "../Screens/login/ResetPasswordScreen";
-import ForgetPasswordScreen from "../Screens/login/ForgotPassword";
+
 const ProfileStack = createStackNavigator();
 
 function ProfileStackScreen() {
@@ -13,7 +13,6 @@ function ProfileStackScreen() {
     <ProfileStack.Navigator>
       <ProfileStack.Screen name="ProfileScreen" component={ProfileScreen} />
       <ProfileStack.Screen name="SignInScreen" component={SignInScreen} />
-      <ProfileStack.Screen name="ForgetPasswordScreen" component={ForgetPasswordScreen} />
       <ProfileStack.Screen
         name="OTPVerificationScreen"
         component={OTPVerificationScreen}

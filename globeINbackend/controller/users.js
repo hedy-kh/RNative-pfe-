@@ -6,31 +6,42 @@ const crypto =require('crypto');
 const jwt = require('jsonwebtoken');
 const { generateOTP, mailTransport, generateEmailTemplate, plainEmailTemplate, generatePasswordResetTemplate, ResetPasswordEmailSuccess } = require('../utils/mail');
 const { isValidObjectId } = require('mongoose');
-exports.createUsers  = async (req, res) => {
-    const {name,email,password}=req.body;
-    const user = await User.findOne({email})
-    if (user) 
-    return sendError(res,'this email is already exists')
-    const newUser= new User({
+exports.createUsers = async (req, res) => {
+    const { name, email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (user) {
+        return res.status(400).json({ success: false, error: 'This email is already exists' });
+    }
+
+    const newUser = new User({
         name,
         email,
         password,
     });
     const OTP = generateOTP();
     const verificationToken = new VerificationToken({
-        owner:newUser._id,
-        token:OTP,
+        owner: newUser._id,
+        token: OTP,
     });
     await verificationToken.save();
     await newUser.save();
     mailTransport().sendMail({
-        from:'no-reply@gmall.com',
-        to:newUser.email,
-        subject:"verify your email account",
-        html:generateEmailTemplate(OTP),
+        from: 'no-reply@gmall.com',
+        to: newUser.email,
+        subject: 'Verify your email account',
+        html: generateEmailTemplate(OTP),
     });
-    res.json({success:true,user:{name:newUser.name,email:newUser.email,id:newUser._id,verified:newUser.verified}});
+    res.json({
+        success: true,
+        user: {
+            name: newUser.name,
+            email: newUser.email,
+            id: newUser._id,
+            verified: newUser.verified
+        }
+    });
 };
+
  exports.SignIn=async (req,res)=>{
     const {email,password} =req.body;
     if(!email.trim()||!password.trim()) return sendError(res,'email or password is missing')
@@ -46,28 +57,45 @@ exports.createUsers  = async (req, res) => {
         success:true,
         user:{name:user.name,email:user.email,id:user._id,token:token},});
  };
- exports.verifyEmail = async(req,res)=>{
-    const {userId,otp}=req.body;
-    if (!userId || !otp.trim() ) return sendError(res,'invalid request,missing parameters !');
-    if(!isValidObjectId(userId)) return sendError(res,'invalid UserId !');
-    const user=await User.findById(userId);
-    if(!user)return sendError(res,'user not found !');
-    if(user.verified)return sendError(res,'this account is already verified !');
-    const token=await VerificationToken.findOne({owner:user._id});
-    if(!token)return sendError(res,'server error ! or we didnt find user');
+ exports.verifyEmail = async(req, res) => {
+    const { userId, otp } = req.body;
+    if (!userId || !otp.trim()) {
+        return res.status(400).json({ success: false, error: 'Invalid request, missing parameters!' });
+    }
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({ success: false, error: 'Invalid UserId!' });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ success: false, error: 'User not found!' });
+    }
+    if (user.verified) {
+        return res.status(400).json({ success: false, error: 'This account is already verified!' });
+    }
+    const token = await VerificationToken.findOne({ owner: user._id });
+    if (!token) {
+        return res.status(500).json({ success: false, error: 'Server error! Unable to find verification token.' });
+    }
     const isMatched = await token.compareToken(otp);
-    if(!isMatched) return sendError(res,'Invalid token ');
-    user.verified=true;
+    if (!isMatched) {
+        return res.status(400).json({ success: false, error: 'Invalid token!' });
+    }
+    user.verified = true;
     await VerificationToken.findByIdAndDelete(token._id);
     await user.save();
     mailTransport().sendMail({
-        from:'no-reply@gmall.com',
-        to:user.email,
-        subject:`welcome ${user.name}`,
-        html:plainEmailTemplate('Your Email Has Been Confirmed','thanks for connecting with GlobIN'),
+        from: 'no-reply@gmall.com',
+        to: user.email,
+        subject: `Welcome ${user.name}`,
+        html: plainEmailTemplate('Your Email Has Been Confirmed', 'Thanks for connecting with GlobIN'),
     });
-    res.status(200).json({message:'Email Is Successfully Verified!', user:{name:user.name,email:user.email,id:user._id,token:token}});
- };
+    res.status(200).json({
+        success: true,
+        message: 'Email Is Successfully Verified!',
+        user: { name: user.name, email: user.email, id: user._id, token: token }
+    });
+};
+
  exports.forgetPassword =async(req,res)=>{
   const {email}=req.body;
   if(!email) return sendError(res,'Please provide valid email');
