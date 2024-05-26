@@ -1,6 +1,5 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -11,29 +10,26 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 1024 * 1024 * 5 },
-  fileFilter: function(req, file, cb) {
-    checkFileType(file, cb);
-  },
-}).single('image');
-
 function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png/;
+  const filetypes = /jpeg|jpg|png|mp4|mov|avi/; // Add video file types
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb('Error: Images only! (JPEG, JPG, PNG)');
+    cb('Error: Images and videos only! (JPEG, JPG, PNG, MP4, MOV, AVI)');
   }
 }
 
-// Log req.file to debug multer
-upload((req, res, next) => {
-  console.log('Request file:', req.file);
-  next();
-});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 1024 * 1024 * 50 }, // 50 MB limit
+  fileFilter: function(req, file, cb) {
+    checkFileType(file, cb);
+  }
+}).fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
+]);
 
-module.exports = {upload, checkFileType};
+module.exports = { upload };

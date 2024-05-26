@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createUsers, SignIn, verifyEmail, forgetPassword, resetPassword,logout } = require('../controller/users');
+const { createUsers, SignIn, verifyEmail, forgetPassword, resetPassword,logout, updateProfile, getUserById } = require('../controller/users');
 const { isResetTokenValid } = require('../middlewares/user');
 const { validateUser, validate } = require('../middlewares/validator');
 const passport = require('passport');
@@ -15,6 +15,8 @@ router.get('/auth/facebook', passport.authenticate('facebook'));
 router.get('/auth/facebook/redirect', passport.authenticate('facebook'), (req, res) => {
   res.redirect('/profile');
 });
+router.get('/getuser/:userId', getUserById);
+router.put('/updateprofile/:userId',upload,updateProfile);
 router.post('/create',upload,validateUser,validate, createUsers);
 router.post('/signin', SignIn);
 router.post('/verify-email', verifyEmail);

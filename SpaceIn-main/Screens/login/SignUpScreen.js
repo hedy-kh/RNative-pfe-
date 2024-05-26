@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import Axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const apiUrl = "http://192.168.186.178:8081/api/user/create";
+const apiUrl = "http://192.168.1.4:8081/api/user/create";
 
 const SignUpScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState("");

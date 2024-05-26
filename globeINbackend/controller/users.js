@@ -3,6 +3,7 @@ const VerificationToken = require('../model/verificationToken');
 const ResetToken = require('../model/resetToken');
 const { sendError, createRandomBytes } = require('../utils/helper');
 const crypto =require('crypto');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { generateOTP, mailTransport, generateEmailTemplate, plainEmailTemplate, generatePasswordResetTemplate, ResetPasswordEmailSuccess } = require('../utils/mail');
 const { isValidObjectId } = require('mongoose');
@@ -133,6 +134,115 @@ exports.createUsers = async (req, res) => {
      });
     res.json({success:true,message:"password reset successfully"});
  };
+ /*
+ exports.updateProfile = async (req, res) => {
+    const { userId } = req.params;
+    const { name, email, password } = req.body;
+    const image = req.files['image'] ? req.files['image'][0].path : '';
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({ success: false, error: 'Invalid User ID!' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ success: false, error: 'User not found!' });
+    }
+
+    if (name) user.name = name.trim();
+    if (email) user.email = email.trim();
+    if (profilePic) user.profilePic = profilePic;
+
+    if (password) {
+        if (password.trim().length < 8 || password.trim().length > 20) {
+            return sendError(res, 'Password must be between 8 and 20 characters long');
+        }
+
+        const isSamePassword = await user.comparePassword(password);
+        if (isSamePassword) {
+            return sendError(res, 'New password cannot be the same as the old password');
+        }
+
+        const hashedPassword = await bcrypt.hash(password.trim(), 8);
+        user.password = hashedPassword;
+    }
+
+    await user.save();
+    res.json({
+        success: true,
+        user: {
+            name: user.name,
+            email: user.email,
+            profilePic: user.profilePic,
+            verified: user.verified
+        }
+    });
+};
+*/
+exports.updateProfile = async (req, res) => {
+    const { userId } = req.params;
+    const { name, email, password } = req.body;
+    
+    const image = req.files && req.files['image'] ? req.files['image'][0].path : ''; 
+    
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({ success: false, error: 'Invalid User ID!' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ success: false, error: 'User not found!' });
+    }
+
+    if (name) user.name = name.trim();
+    if (email) user.email = email.trim();
+    if (image) user.profilePic = image; 
+
+    if (password) {
+        if (password.trim().length < 8 || password.trim().length > 20) {
+            return sendError(res, 'Password must be between 8 and 20 characters long');
+        }
+
+        const isSamePassword = await user.comparePassword(password);
+        if (isSamePassword) {
+            return sendError(res, 'New password cannot be the same as the old password');
+        }
+
+        const hashedPassword = await bcrypt.hash(password.trim(), 8);
+        user.password = hashedPassword;
+    }
+
+    await user.save();
+    res.json({
+        success: true,
+        user: {
+            name: user.name,
+            email: user.email,
+            profilePic: user.profilePic,
+            verified: user.verified
+        }
+    });
+};
+
+exports.getUserById = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        if (!isValidObjectId(userId)) {
+            return res.status(400).json({ success: false, error: 'Invalid User ID!' });
+        }
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found!' });
+        }
+
+        res.json({ success: true, user });
+    } catch (error) {
+        console.error('Error in getUserById:', error);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+};
  exports.logout = async (req, res) => {
     try {
       res.status(200).json({ message: 'Logout successful' });

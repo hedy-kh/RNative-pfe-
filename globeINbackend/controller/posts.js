@@ -1,33 +1,32 @@
 const Product = require("../model/posts");
+const bodyParser = require('body-parser'); 
 const multer = require('multer');
 const path = require('path');
 const fs =require('fs')
 const { Types } = require('mongoose');
 const { sendError, sendSuccess } = require('../utils/helper');
-const bodyParser = require('body-parser'); 
+
 exports.createProduct = async (req, res) => {
   try {
     const userId = new Types.ObjectId(req.headers['user-id']);
     if (!userId) {
       return res.status(400).json({ error: 'User ID not available in headers' });
     }
-    const { name, description, price, location } = req.body; // Remove createdAt
-    const image = req.file ? req.file.path : '';
-    console.log('req.file:', req.file); // Debugging
-    console.log('image:', image); // Debugging
+    const { name, description, price, location } = req.body;
+    const image = req.files['image'] ? req.files['image'][0].path : '';
+    const video = req.files['video'] ? req.files['video'][0].path : '';
 
-    // Set the createdAt field directly here
     const newProduct = new Product({
-      user: userId, 
+      user: userId,
       name,
       description,
       price,
       location,
       image,
-      active: true 
+      video, 
+      active: true
     });
-    
-    console.log('newProduct:', newProduct); // Check the new product object
+
     await newProduct.save();
     return res.status(201).json({ message: 'Product created successfully' });
   } catch (error) {
@@ -38,41 +37,7 @@ exports.createProduct = async (req, res) => {
 
 
 
-/*
-exports.createProduct = async (req, res) => {
-  try {
-    const userId = new Types.ObjectId(req.headers['user-id']);
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID not available in headers' });
-    }
-    const { name, description, price, location, createdAt } = req.body;
-    upload(req, res, async (err) => {
-      if (err) {
-        return res.status(500).json({ error: err.message || 'Failed to upload image' });
-      }
-      console.log('req.file:', req.file); // Check if req.file is populated correctly
-      const image = req.file ? req.file.path : '';
-      console.log('image path:', image); // Check the image path
-      const newProduct = new Product({
-        user: userId, 
-        name,
-        description,
-        price,
-        location,
-        createdAt, 
-        image, // Ensure image path is correctly assigned
-        active: true 
-      });
-      console.log('newProduct:', newProduct); // Check the new product object
-      await newProduct.save();
-      return res.status(201).json({ message: 'Product created successfully' });
-    });
-  } catch (error) {
-    console.error('Error creating product:', error);
-    return res.status(500).json({ error: 'Failed to create product' });
-  }
-};
-*/
+
 /*
 exports.createProduct = async (req, res) => {
   try {
@@ -155,6 +120,18 @@ exports.getProduct = async (req, res) => {
     return res.status(500).json({ error: "Failed to retrieve product" });
   }
 };
+exports.getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
+    if (!products || products.length === 0) {
+      return res.status(404).json({ error: 'No products found' });
+    }
+    return res.status(200).json({ message: 'Products retrieved successfully', products });
+  } catch (error) {
+    console.error("Error retrieving products:", error);
+    return res.status(500).json({ error: "Failed to retrieve products" });
+  }
+};
 
 exports.getProductsByUser = async (req, res) => {
   try {
@@ -170,6 +147,41 @@ exports.getProductsByUser = async (req, res) => {
   }
 };
 
+
+exports.updateProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const userId = new Types.ObjectId(req.headers['user-id']);
+    const { name, description, price, location, createdAt } = req.body;
+    
+    const product = await Product.findOne({ _id: productId, user: userId });
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found or user not authorized to update' });
+    }
+    
+    if (name) product.name = name;
+    if (description) product.description = description;
+    if (price) product.price = price;
+    if (location) product.location = location;
+    if (createdAt) product.createdAt = createdAt;
+
+    if (req.files['image']) {
+      product.image = req.files['image'][0].path;
+    }
+    if (req.files['video']) {
+      product.video = req.files['video'][0].path;
+    }
+
+    const updatedProduct = await product.save();
+
+    return res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return res.status(500).json({ error: "Failed to update product" });
+  }
+};
+
+/*
 exports.updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -189,7 +201,7 @@ exports.updateProduct = async (req, res) => {
     return res.status(500).json({ error: "Failed to update product" });
   }
 };
-
+*/
 exports.deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;

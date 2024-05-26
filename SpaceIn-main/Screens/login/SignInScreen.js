@@ -12,8 +12,9 @@ import {
 import Axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CommonActions } from "@react-navigation/native";
+import { AuthSession } from 'expo-auth-session';
 
-const apiUrl = "http://192.168.186.178:8081/api/user/signin";
+const apiUrl = "http://192.168.1.4:8081/api/user/signin";
 
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -34,13 +35,12 @@ const SignInScreen = ({ navigation }) => {
           await AsyncStorage.removeItem("token");
         }
 
-        // Navigate to ProfileScreen
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: "ProfileScreen" }],
-      })
-    );
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "ProfileScreen" }],
+          })
+        );
       } else {
         alert(response.data.error);
       }
@@ -51,6 +51,37 @@ const SignInScreen = ({ navigation }) => {
   };
 
   const { width, height } = Dimensions.get("window");
+
+  const googleSignIn = async () => {
+    try {
+      const redirectUrl = 'http://localhost:8000/api/user/auth/google/redirect';
+      const clientId = '778117401777-5nfe6ho8otdjkqd179v692suimkkh603.apps.googleusercontent.com';
+      const clientSecret = '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';
+  
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth` +
+        `?client_id=${clientId}` +
+        `&redirect_uri=${encodeURIComponent(redirectUrl)}` +
+        `&response_type=code` +
+        `&scope=openid profile email`;
+  
+      const response = await AuthSession.startAsync({ authUrl });
+      if (response.type === 'success' && response.params.code) {
+        const tokenResponse = await Axios.post('https://oauth2.googleapis.com/token', {
+          code: response.params.code,
+          redirect_uri: redirectUrl,
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: 'authorization_code',
+        });
+  
+        console.log(tokenResponse.data);
+      } else {
+        console.log('Google sign-in failed');
+      }
+    } catch (error) {
+      console.error('Error during Google sign-in:', error);
+    }
+  };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
@@ -101,6 +132,7 @@ const SignInScreen = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.socialButton, { backgroundColor: "#FFFFFF" }]}
+            onPress={googleSignIn}
           >
             <Image
               source={require("./assets/google.png")}

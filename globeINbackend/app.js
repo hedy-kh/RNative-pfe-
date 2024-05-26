@@ -1,10 +1,10 @@
 
 const express = require('express');
+const bodyParser = require('body-parser');
 const { Mongoose } = require('mongoose');
 const userRouter = require('./routes/user');
 const productRouter = require('./routes/product'); 
 const cors= require("cors");
-const bodyParser = require('body-parser');
 require ('dotenv').config();
 require ('./db');
 const app = express();
